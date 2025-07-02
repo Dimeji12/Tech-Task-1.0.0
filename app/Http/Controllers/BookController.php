@@ -33,14 +33,14 @@ class BookController extends Controller
     }
 
 public function update(UpdateRequest $request, Update $update, Book $book)
-{
-    $updatedBook = $update($request->validated(), $book);
+    {
+        $updatedBook = $update($request->validated(), $book);
 
-    return response()->json([
-        'message' => 'Successfully updated the book.',
-        'data' => $updatedBook
-    ]);
-}
+        return response()->json([
+            'message' => 'Successfully updated the book.',
+            'data' => $updatedBook
+        ]);
+    }
 
     public function destroy(DestroyRequest $request, Destroy $destroy, Book $book)
     {
