@@ -49,10 +49,20 @@ mix.js('resources/js/app.js', 'public/js')
     },
   })
   .browserSync({
-    proxy: 'localhost'
-   })
+    proxy: 'localhost:8080',
+    port: 3000,         // This is the port you'll open in your browser
+    open: true,         // Automatically opens browser
+    notify: true,       // Shows BrowserSync notifications
+    files: [            // Reload on changes
+      'app/**/*.php',
+      'resources/views/**/*.blade.php',
+      'public/js/**/*.js',
+      'public/css/**/*.css'
+    ]
+  })
   .vue();
 
-if (mix.inProduction()) {
+if (mix.inProduction())
+{
   mix.version();
 }
