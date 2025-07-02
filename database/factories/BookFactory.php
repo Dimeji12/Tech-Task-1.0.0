@@ -19,7 +19,7 @@ class BookFactory extends Factory
         return [
             'title' => $this->faker->text,
             'author' => $this->faker->name,
-            'rating' => 5,
+            'rating' => $this->faker->numberBetween(1, 10),
         ];
     }
 }
