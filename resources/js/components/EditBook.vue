@@ -1,49 +1,62 @@
 <template>
   <div>
+    <!-- Header -->
     <div class="bg-gray-800 pt-8 pb-20">
-      <div class="w-9/12 text-center mr-auto ml-auto -mt-0 mb-0">
+      <div class="w-9/12 text-center mx-auto">
         <h1 class="text-orange text-5xl p-10">Book Shop</h1>
-        <p class="w-9/12 mr-auto ml-auto -mt-0 mb-0 text-white">
+        <p class="w-9/12 mx-auto text-white">
           Cupcake ipsum dolor sit amet croissant. I love topping candy canes sweet roll croissant caramels. 
           Soufflé macaroon liquorice chocolate tart I love.
         </p>
       </div>
     </div>
+
+    <!-- Form Section -->
     <div class="bg-white py-12">
-      <div class="w-1/3 text-left mr-auto ml-auto -mt-0 mb-0">
-        <form @submit.prevent="submitForm">
-          <div class="pt-10">
-            <h2 class="text-center text-3xl pb-10">Edit Book</h2>
-            <div class="pb-10">
-              <label class="w-20 inline-block font-semibold">Title: </label>
+      <div class="w-full max-w-lg mx-auto">
+        <form @submit.prevent="submitForm" class="px-4">
+          <!-- Form Title -->
+          <h2 class="text-center text-3xl mb-10">Edit Book</h2>
+
+          <!-- Form Fields Wrapper -->
+          <div class="-ml-12">
+            <!-- Title Field -->
+            <div class="flex items-start gap-6 mb-6">
+              <label class="w-28 text-right font-semibold text-gray-700 pt-2">Title:</label>
               <input
                 v-model="form.title"
                 type="text"
-                class="rounded-md border-gray-400 border-solid border-[1px] p-3 w-96 text-lg"
+                class="flex-1 rounded border border-gray-300 p-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
-            <div class="pb-10">
-              <label class="w-20 inline-block font-semibold">Author: </label>
+
+            <!-- Author Field -->
+            <div class="flex items-start gap-6 mb-6">
+              <label class="w-28 text-right font-semibold text-gray-700 pt-2">Author:</label>
               <input
                 v-model="form.author"
                 type="text"
-                class="rounded-md border-gray-400 border-solid border-[1px] p-3 w-96 text-lg"
+                class="flex-1 rounded border border-gray-300 p-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
-            <div class="pb-10">
-              <label class="w-20 inline-block font-semibold">Rating: </label>
+
+            <!-- Rating Field -->
+            <div class="flex items-start gap-6 mb-10">
+              <label class="w-28 text-right font-semibold text-gray-700 pt-2">Rating:</label>
               <input
                 v-model="form.rating"
                 type="number"
                 min="1"
                 max="10"
-                class="rounded-md border-gray-400 border-solid border-[1px] p-3 w-96 text-lg"
+                class="flex-1 rounded border border-gray-300 p-2 text-base focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
           </div>
-          <div class="text-center">
+
+          <!-- Submit Button -->
+          <div class="text-center mt-6">
             <button
-              class="text-white bg-orange hover:bg-orange-600 py-3 px-8 rounded text-lg font-semibold transition"
+              class="bg-orange text-white hover:bg-orange-600 py-2 px-6 rounded text-lg font-semibold transition"
               type="submit"
             >
               Submit
@@ -56,6 +69,8 @@
 </template>
 
 <script>
+import { useEditBook } from '../useEditBook.js';
+
 export default {
   name: 'EditBook',
   props: {
@@ -65,38 +80,8 @@ export default {
     }
   },
   data() {
-    return {
-      form: {
-        title: this.book.title,
-        author: this.book.author,
-        rating: this.book.rating
-      }
-    }
-  },
-  methods: {
-    async submitForm() {
-      try {
-        const response = await fetch(`/books/${this.book.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(this.form)
-        });
-        
-        if (response.ok) {
-          window.location.href = '/';
-        } else {
-          const errorData = await response.json();
-          alert(`Error: ${errorData.message || 'Failed to update book'}`);
-        }
-      } catch (error) {
-        console.error('Error updating book:', error);
-        alert('An error occurred while updating the book');
-      }
-    }
+    // Initialize form data and method from external logic file
+    return useEditBook(this.book);
   }
-}
+};
 </script>
