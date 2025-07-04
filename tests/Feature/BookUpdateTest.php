@@ -4,26 +4,24 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Book;
+use App\Models\Genre;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class BookUpdateTest extends TestCase
 {
-    use RefreshDatabase; // Refreshes the database before each test
+    use RefreshDatabase;
 
-            // Test for successfully updating a book
+    /** @test */
     public function test_book_update()
     {
-    // Create a sample book with a rating of 5
         $book = Book::factory()->create(['rating' => 5]);
 
-    // Send PUT request to update the book's details
         $response = $this->putJson("/api/books/{$book->id}", [
             'title' => 'Updated Title',
             'author' => 'Updated Author',
             'rating' => 8,
         ]);
 
-// Assert response is successful and contains updated data
         $response->assertStatus(200)
             ->assertJson([
                 'message' => 'Successfully updated the book.',
@@ -34,7 +32,6 @@ class BookUpdateTest extends TestCase
                 ],
             ]);
 
-// Check that the updated data exists in the database
         $this->assertDatabaseHas('books', [
             'id' => $book->id,
             'title' => 'Updated Title',
@@ -42,24 +39,56 @@ class BookUpdateTest extends TestCase
         ]);
     }
 
-    // Test for validation errors when updating a book
+    /** @test */
     public function test_book_update_validation()
     {
-    // Create a sample book
         $book = Book::factory()->create();
 
-    // Test submitting no data — should fail required field validation
+        // Missing required fields
         $response = $this->putJson("/api/books/{$book->id}", []);
-        $response->assertStatus(422) // Unprocessable Entity
-            ->assertJsonValidationErrors(['title', 'author', 'rating']);
+        $response->assertStatus(422)
+                 ->assertJsonValidationErrors(['title', 'author', 'rating']);
 
-    // Test submitting an invalid rating — should fail rating validation
+        // Invalid rating
         $response = $this->putJson("/api/books/{$book->id}", [
             'title' => 'Title',
             'author' => 'Author',
-            'rating' => 11, // Rating exceeds the allowed range
+            'rating' => 11, // Exceeds max limit
         ]);
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['rating']);
+                 ->assertJsonValidationErrors(['rating']);
+    }
+
+    /** @test */
+    public function test_book_update_with_genres()
+    {
+        $book = Book::factory()->create();
+        $genres = Genre::factory()->count(2)->create();
+
+        $response = $this->putJson("/api/books/{$book->id}", [
+            'title' => 'Updated Title with Genres',
+            'author' => 'Updated Author',
+            'rating' => 9,
+            'genre_ids' => $genres->pluck('id')->toArray(),
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'message' => 'Successfully updated the book.',
+                     'data' => [
+                         'title' => 'Updated Title with Genres',
+                         'genres' => [
+                             ['id' => $genres[0]->id],
+                             ['id' => $genres[1]->id],
+                         ],
+                     ],
+                 ]);
+
+        foreach ($genres as $genre) {
+            $this->assertDatabaseHas('book_genre', [
+                'book_id' => $book->id,
+                'genre_id' => $genre->id,
+            ]);
+        }
     }
 }
