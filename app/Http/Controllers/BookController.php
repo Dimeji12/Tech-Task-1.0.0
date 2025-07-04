@@ -24,13 +24,13 @@ class BookController extends Controller
         ]);
     }
 
-    // Create a new book with optional genres
+    // Create a new book and associate genres (if provided)
     public function store(StoreRequest $request, Store $store)
     {
         $validated = $request->validated();
         $book = $store($validated);
 
-        // Sync genres if provided
+        // Attach genres to the newly created book
         if (isset($validated['genre_ids'])) {
             $book->genres()->sync($validated['genre_ids']);
         }
@@ -41,24 +41,28 @@ class BookController extends Controller
         ]);
     }
 
-    // Update existing book + genres
+                     // Update an existing book and sync associated genres
     public function update(UpdateRequest $request, Update $update, Book $book)
     {
+                 // Validate incoming request data
         $validated = $request->validated();
+
+// Use the Update service to update the book's core fields
         $updatedBook = $update($validated, $book);
 
-        // Sync genres if provided
+    //If genres are provided sync them with the book
         if (isset($validated['genre_ids'])) {
             $updatedBook->genres()->sync($validated['genre_ids']);
         }
 
+        // Return the updated book with its genres
         return response()->json([
             'message' => 'Successfully updated the book.',
             'data' => $updatedBook->load('genres')
         ]);
     }
 
-    // Delete book
+    // Delete a book record
     public function destroy(DestroyRequest $request, Destroy $destroy, Book $book)
     {
         $destroy($book);
