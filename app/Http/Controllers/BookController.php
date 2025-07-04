@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Genre;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Http\Requests\Book\DestroyRequest;
 use App\Http\Requests\Book\IndexRequest;
@@ -12,11 +12,10 @@ use App\Http\Services\Book\Destroy;
 use App\Http\Services\Book\Index;
 use App\Http\Services\Book\Store;
 use App\Http\Services\Book\Update;
-use App\Models\Book;
 
 class BookController extends Controller
 {
-    // Fetch a list of all books
+    // List all books
     public function index(IndexRequest $request, Index $index)
     {
         return response()->json([
@@ -25,41 +24,41 @@ class BookController extends Controller
         ]);
     }
 
-    // Store a new book
+    // Create a new book with optional genres
     public function store(StoreRequest $request, Store $store)
     {
-        $book = $store($request->validated());
+        $validated = $request->validated();
+        $book = $store($validated);
+
+        // Sync genres if provided
+        if (isset($validated['genre_ids'])) {
+            $book->genres()->sync($validated['genre_ids']);
+        }
 
         return response()->json([
             'message' => 'Successfully stored the book.',
-            'data' => $book
+            'data' => $book->load('genres')
         ]);
     }
 
+    // Update existing book + genres
+    public function update(UpdateRequest $request, Update $update, Book $book)
+    {
+        $validated = $request->validated();
+        $updatedBook = $update($validated, $book);
 
+        // Sync genres if provided
+        if (isset($validated['genre_ids'])) {
+            $updatedBook->genres()->sync($validated['genre_ids']);
+        }
 
+        return response()->json([
+            'message' => 'Successfully updated the book.',
+            'data' => $updatedBook->load('genres')
+        ]);
+    }
 
-
-   // Handle the update of an existing book record. This method receives validated input from the UpdateRequest,
-   // uses the Update service class to apply changes to the given Book model,
-   // and then returns a JSON response with a success message and the updated book data.
-   public function update(UpdateRequest $request, Update $update, Book $book)
-{
- //This will  Call the update service to update the book
-    $updatedBook = $update($request->validated(), $book);
-
-// This will return success response with updated book data
-    return response()->json([
-        'message' => 'Successfully updated the book.',
-        'data' => $updatedBook
-    ]);
-}
-
-
-
-
-
-    // Delete a book
+    // Delete book
     public function destroy(DestroyRequest $request, Destroy $destroy, Book $book)
     {
         $destroy($book);

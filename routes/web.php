@@ -34,7 +34,7 @@ Route::get('/books/{book}/edit', function (Book $book) {
     ]);
 });
 
-// Handle book update form submission (PUT request)
+//       Handle book update form submission (PUT request)
 Route::put('/books/{book}', [BookController::class, 'update']);
 
 // Handle deleting a book (DELETE request)
